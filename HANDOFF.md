@@ -9,6 +9,19 @@ Never put keys or passwords in this file.
 - Fresh build: new Make scenario, new HighLevel workflow, new Supabase functions. Nothing is deployed until Daniel says go.
 - Staff come from the `employees` table with a `location_id` column, not from hardcoded code.
 
+## Claude: current task (from Viktor)
+Do these on a branch, open a PR, and don't deploy anything:
+1. `PLAN.md`: the architecture, with one table per piece (Supabase, Make, Tally, HighLevel, Zapier) showing what gets built and what's needed from Daniel.
+   - Shift half: Boulevard shift CSV → Tally upload → Make scenario → Supabase edge functions → out-of-office blocks on each staff member's Google Calendar → HighLevel reads availability.
+   - Booking half: HighLevel workflow (appointment status on Comprehensive SD and Regular SD) → webhook per staff member → Zapier → Boulevard client + time block.
+   - Public copy of the old Make scenario: https://us2.make.com/public/shared-scenario/0OQdrBfKtpS/sa-csv-upload
+2. `supabase/migrations/`: tables `employees`, `store_hours`, `upload_batches`, `ooo_events`, plus a `location_id` column so staff aren't hardcoded.
+3. `supabase/functions/process-schedule` and `record-results`:
+   - read staff from the table; a day with no CSV row = off;
+   - time zone America/New_York, 15-minute threshold, max 365 days ahead;
+   - add a delay between Google Calendar calls to avoid the rate limit.
+4. Write your progress, questions and blockers in the Log below.
+
 ## Waiting on Daniel
 - Midlothian Boulevard location ID, staff list, a Google calendar for each staff member, store hours, and which HighLevel calendars to use.
 - Screenshots of the live Zap.
