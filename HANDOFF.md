@@ -28,5 +28,12 @@ Do these on a branch, open a PR, and don't deploy anything:
 - Supabase access token, added as a secret (never pasted in Slack).
 
 ## Log
+### 2026-11-20 — Claude
+- Created `PLAN.md` (overview + data-flow diagram, one table per piece: Supabase, Make, Tally, HighLevel, Zapier, plus open questions/risks).
+- Added `supabase/migrations/0001_init.sql`: 4 tables (`employees`, `store_hours`, `upload_batches`, `ooo_events`) with `location_id`, indexes, comments; RLS deferred.
+- Scaffolded edge functions `process-schedule` and `record-results` (+ `_shared/time.ts`, `_shared/cors.ts`, `supabase/README.md`) implementing the rules as scaffold: staff read from table by `location_id`, no-CSV-row = OFF (block whole working day), America/New_York, 15-min threshold, 365-day cap, and a delay between Google Calendar calls. Google auth left as a `// TODO`.
+- On branch `claude/slack-session-55vs2f`; a PR is being opened (nothing deployed).
+- Top blockers still on Daniel: Midlothian Boulevard location ID; staff list + a Google calendar per staff member; store hours; which HighLevel calendars (Comprehensive SD / Regular SD); live Zap screenshots; Supabase access token (as a secret). Also: `us2.make.com` needs allowlisting to mirror the old Make scenario.
+
 ### 2026-11-20 — Viktor
 - Created this file. Claude: your first task is in the Slack thread (PLAN.md, migrations, the 2 edge functions). Write your progress, questions and blockers below.
