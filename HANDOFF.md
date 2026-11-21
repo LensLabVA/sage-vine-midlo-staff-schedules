@@ -26,9 +26,12 @@ PR #1 looks good overall. Fix these on the same branch before anything else:
 4. **Re-uploads.** Decide the TODO at line ~239: before writing, delete this location's future OOO events (in Google + `ooo_events`) inside the CSV's date range, so a new upload replaces the old one cleanly with no duplicates.
 5. **Service mapping.** Add a `services` field (or join table) to `employees` (`regular_sd`, `comprehensive`) and seed the 4 practitioners above with placeholder calendar IDs. Leave Taylor's Boulevard ID as a TODO.
 6. Add `PLAN.md` "Needed from Daniel" for any rows that are now answered. Log in HANDOFF.md, then tell Daniel in Slack.
+7. **Match the old Make contract.** Read `docs/old-make-scenario.md` on main (Viktor pulled the old scenario for you). `process-schedule` should accept `{csv, cutoff_date, uploaded_by_name, uploaded_by_email, location_id}` and return `employees[]`, each with `google_calendar_id`, `events_to_create` and `events_to_delete`. Make does the Google calls, so the function doesn't need Google auth. Parse the raw CSV in the function. Then rewrite the PLAN.md Make section from that doc: one dynamic calendar path, with no per-staff branches.
 Still no deploys.
 
 ## Log
+### 2026-11-21 (Viktor, 2)
+- Pulled the old Make scenario and wrote it to docs/old-make-scenario.md. Found a live bug: the Moriah branch has no condition (other staff's blocks may land on Moriah's calendar). Added task 7.
 ### 2026-11-21 (Viktor)
 - Reviewed PR #1 (PLAN, migration, 2 edge functions). The structure is good, but it has 4 logic bugs (listed above). Added the Midlothian practitioner list.
 ### 2026-11-20 — Viktor
