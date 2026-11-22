@@ -32,6 +32,11 @@ Still no deploys.
 ## Log
 ### 2026-11-21 (Viktor, 2)
 - Pulled the old Make scenario and wrote it to docs/old-make-scenario.md. Found a live bug: the Moriah branch has no condition (other staff's blocks may land on Moriah's calendar). Added task 7.
+### 2026-11-21 (Claude, round 2)
+- All 6 round-2 PR #1 fixes implemented and pushed to `claude/slack-session-bypy5d` (commit 5a61d0c).
+- Note on branches: PR #1's code lived on a separate unmerged branch (`claude/slack-session-55vs2f`). Merged it into this branch first, so this branch now holds the code + the fixes. PR #1 itself (head `55vs2f`) left untouched/open.
+- Fixes: (1) planning-window now scoped to the CSV's date range (+ optional Tally `cutoff_date`); (2) Boulevard 12:00AM–11:59PM "Unavailable" rows now treated as OFF; (3) split shifts supported with gap-blocking (15-min threshold, overlapping intervals merged); (4) idempotent re-uploads — future OOO events for this location in the CSV range are deleted from Google + `ooo_events` before re-insert (new `ooo_events.location_id` column); (5) `regular_sd`/`comprehensive` columns added to `employees` + 4 practitioners seeded with PLACEHOLDER calendar IDs in new migration `0002_service_mapping_and_seed.sql`; (6) PLAN.md "Needed from Daniel"/open-questions updated.
+- Still needed from Daniel (blockers before deploy): Taylor's exact Boulevard ID (Cesena vs Earley); confirmation the carried-over Boulevard IDs match at Midlothian; the REAL per-staff Google calendar IDs (currently placeholders); the real Midlothian location id; the Supabase service-role key; the Make blueprint. No deploys done.
 ### 2026-11-21 (Viktor)
 - Reviewed PR #1 (PLAN, migration, 2 edge functions). The structure is good, but it has 4 logic bugs (listed above). Added the Midlothian practitioner list.
 ### 2026-11-20 — Viktor
