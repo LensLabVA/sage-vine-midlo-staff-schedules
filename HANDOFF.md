@@ -38,10 +38,23 @@ PR #1 looks good overall. Fix these on the same branch before anything else:
 Still no deploys.
 
 ## Log
+### 2026-11-22 (Claude)
+- Consolidated iwomgx code onto wg5e78; implemented task 8 (location SV00002 + Midlothian store_hours seeded). Still blocked on: real Google calendar IDs, Taylor's Boulevard ID, real Boulevard CSV headers, Supabase service-role key, Make blueprint. Nothing deployed.
 ### 2026-11-22 (Viktor)
 - Added Midlothian store ID, store hours, GHL calendar naming. Added task 8.
+### 2026-11-22 (Claude)
+- Merged the code from `claude/slack-session-bypy5d` onto this PR branch (`claude/slack-session-iwomgx`): `PLAN.md`, `supabase/` migrations + edge functions + README. Confirmed fixes 1–6 survived the merge.
+- **Fix 7 (old Make contract) done.** Rewrote `process-schedule` to the old scenario's contract: accepts `{csv, cutoff_date, uploaded_by_name, uploaded_by_email, location_id}` with the **raw** Boulevard CSV, parses the CSV in-function, and returns `{batch_id, employees[]}` where each employee has `google_calendar_id`, `events_to_create[] {ooo_event_id,start_at,end_at}` and `events_to_delete[] {ooo_event_id,google_event_id}`. **Removed all Google Calendar calls + the `GOOGLE_ACCESS_TOKEN` stub** — Make now does every create/delete. Scheduling logic (fixes 1–3) reused; idempotency (fix 4) now surfaced as `events_to_delete` instead of an in-function delete. `record-results` updated to reconcile Make's `created[]`/`deleted[]` by `ooo_event_id`. Rewrote PLAN.md's Make section to one dynamic `{{employee.google_calendar_id}}` path (no per-staff router), 1s sleep after every create/delete, "store incomplete executions" on — the old Moriah-branch bug is eliminated by the dynamic path.
+- **Daniel's two refinements folded in.** (a) The 4 seeded practitioner names now end with " at Midlothian location" (so they don't collide with the existing other-branch records); added a SQL comment that this convention carries to the Google calendars / GHL users too. (b) `store_hours` stays a plain weekly schedule — **no** holiday/Thanksgiving logic (launch is after Thanksgiving, per Daniel); PLAN.md notes the real weekly open/close times are still needed.
+- **Remaining blockers (from Daniel, before deploy):** confirm the **real Boulevard CSV column headers** (parser is a best guess — `// TODO` at the parse boundary); **Taylor's Boulevard ID** (Cesena vs Earley); the **real per-staff Google calendar IDs** (still placeholders); the **real Midlothian `location_id`** (placeholder); the **actual Midlothian weekly store hours**; the **Supabase service-role key** (as a secret); the **Make blueprint/scenario** rebuild.
+- Count note: this HANDOFF's task list has **7** numbered fixes; delivered as fixes 1–7 plus Daniel's two session refinements (naming + store-hours/no-holiday) — so "fixes 1–8" seen elsewhere is really 1–7 + the 2 refinements, not 8 numbered fixes. No deploys.
 ### 2026-11-21 (Viktor, 2)
 - Pulled the old Make scenario and wrote it to docs/old-make-scenario.md. Found a live bug: the Moriah branch has no condition (other staff's blocks may land on Moriah's calendar). Added task 7.
+### 2026-11-21 (Claude, round 2)
+- All 6 round-2 PR #1 fixes implemented and pushed to `claude/slack-session-bypy5d` (commit 5a61d0c).
+- Note on branches: PR #1's code lived on a separate unmerged branch (`claude/slack-session-55vs2f`). Merged it into this branch first, so this branch now holds the code + the fixes. PR #1 itself (head `55vs2f`) left untouched/open.
+- Fixes: (1) planning-window now scoped to the CSV's date range (+ optional Tally `cutoff_date`); (2) Boulevard 12:00AM–11:59PM "Unavailable" rows now treated as OFF; (3) split shifts supported with gap-blocking (15-min threshold, overlapping intervals merged); (4) idempotent re-uploads — future OOO events for this location in the CSV range are deleted from Google + `ooo_events` before re-insert (new `ooo_events.location_id` column); (5) `regular_sd`/`comprehensive` columns added to `employees` + 4 practitioners seeded with PLACEHOLDER calendar IDs in new migration `0002_service_mapping_and_seed.sql`; (6) PLAN.md "Needed from Daniel"/open-questions updated.
+- Still needed from Daniel (blockers before deploy): Taylor's exact Boulevard ID (Cesena vs Earley); confirmation the carried-over Boulevard IDs match at Midlothian; the REAL per-staff Google calendar IDs (currently placeholders); the real Midlothian location id; the Supabase service-role key; the Make blueprint. No deploys done.
 ### 2026-11-21 (Viktor)
 - Reviewed PR #1 (PLAN, migration, 2 edge functions). The structure is good, but it has 4 logic bugs (listed above). Added the Midlothian practitioner list.
 ### 2026-11-20 — Viktor
