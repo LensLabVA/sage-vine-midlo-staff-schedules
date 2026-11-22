@@ -10,12 +10,13 @@
 supabase/
   migrations/
     0001_init.sql            # employees, store_hours, upload_batches, ooo_events
+    0002_service_mapping_and_seed.sql  # service cols + ooo_events.location_id + seed
   functions/
     _shared/
       cors.ts                # shared CORS headers + preflight helper
       time.ts                # timezone / threshold / planning-window helpers
     process-schedule/
-      index.ts               # CSV shifts -> OOO blocks -> Google Calendar
+      index.ts               # raw CSV -> OOO plan (events_to_create / events_to_delete)
     record-results/
       index.ts               # finalize upload_batches + reconcile ooo_events
 ```
@@ -45,11 +46,18 @@ secrets via `supabase secrets set`. **Never paste secrets into Slack or commit t
 | --- | --- | --- |
 | `SUPABASE_URL` | both functions | Project URL |
 | `SUPABASE_SERVICE_ROLE_KEY` | both functions | Service-role key for table writes |
-| `GOOGLE_ACCESS_TOKEN` | process-schedule | **Placeholder** — see TODO in `process-schedule/index.ts`. Real build needs a service-account / OAuth token for the Google Calendar API |
+
+> No Google credentials are needed by these functions. `process-schedule` only
+> computes the OOO plan and returns it; **Make performs all Google Calendar
+> create/delete calls** (see `docs/old-make-scenario.md` and the Make section of
+> `PLAN.md`).
 
 ## Notes
 
 - RLS policies are intentionally **deferred** until the auth model is decided (see the
   comment in `0001_init.sql`). Until then the functions rely on the service-role key.
-- Google Calendar auth is stubbed with a `// TODO` — the auth model (service account with
-  domain-wide delegation vs. per-user OAuth) is an open question in `PLAN.md`.
+- `process-schedule` parses the raw Boulevard CSV in-function. The exact column headers are
+  a best guess — see the `// TODO: confirm exact Boulevard CSV column headers` comment and
+  `PLAN.md` open questions.
+- Google Calendar is written by **Make**, not these functions (task 7 / old Make contract),
+  so no Google auth lives here.

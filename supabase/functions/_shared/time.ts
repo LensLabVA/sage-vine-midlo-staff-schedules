@@ -52,15 +52,29 @@ export function datesInWindow(start: Date, days: number): string[] {
   return out;
 }
 
-// Build an RFC3339 timestamp with an explicit IANA time zone for the Google
-// Calendar events.insert payload. Google accepts a local dateTime plus a
-// timeZone field; keeping them paired avoids UTC/DST drift.
-export function toCalendarDateTime(
-  dateStr: string,
-  timeStr: string,
-): { dateTime: string; timeZone: string } {
-  // timeStr is "HH:MM:SS"; Google pairs the local dateTime with timeZone.
-  return { dateTime: `${dateStr}T${timeStr}`, timeZone: TIME_ZONE };
+// Build a fully-qualified RFC3339 timestamp (e.g. "2026-11-22T09:00:00-05:00")
+// for a local America/New_York wall time. process-schedule returns these to Make
+// as the `start_at` / `end_at` of each OOO block; Make hands them straight to the
+// Google Calendar module, so the offset has to be baked in (Make does no tz math).
+// The correct DST offset (-05:00 vs -04:00) is resolved for the given date.
+export function toZonedTimestamp(dateStr: string, timeStr: string): string {
+  const hhmmss = timeStr.length === 5 ? `${timeStr}:00` : timeStr;
+  return `${dateStr}T${hhmmss}${nyUtcOffset(dateStr, hhmmss)}`;
+}
+
+// Resolve the America/New_York UTC offset ("-05:00" / "-04:00") for a local wall
+// time. We probe the instant by reading the wall components as if they were UTC,
+// which picks the right offset except within the few hours around a DST change —
+// acceptable for a salon's open/close windows (transitions happen at 02:00).
+function nyUtcOffset(dateStr: string, hhmmss: string): string {
+  const probe = new Date(`${dateStr}T${hhmmss}Z`);
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: TIME_ZONE,
+    timeZoneName: "longOffset",
+  }).formatToParts(probe);
+  const tz = parts.find((p) => p.type === "timeZoneName")?.value ?? "GMT-05:00";
+  const m = tz.match(/GMT([+-]\d{2}):?(\d{2})/);
+  return m ? `${m[1]}:${m[2]}` : "-05:00";
 }
 
 // Simple delay used to space out Google Calendar API calls (rate limiting).
